@@ -1,0 +1,42 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><script src="/guard.js"></script><link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,600;1,700&family=Quicksand:wght@400;600;700&family=Hind+Siliguri:wght@400;500;600&display=swap" rel="stylesheet"><link rel="stylesheet" href="/site.css"><title>Letter Box 💌</title></head><body>
+<div class="wrap"><a class="back" id="bk" href="/">← Back</a><div id="bm"></div><div class="end">♥♥♥</div></div>
+<script src="/site.js"></script><script>
+const {$,api,burst}=L,id=new URLSearchParams(location.search).get('id')||'',KEY='pin_'+id,out=$('#bm');
+$('#bk').onclick=e=>{e.preventDefault();L.back('/')};
+const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
+function head(b){const h=el('div','bhead theme-'+(b.theme||'rose'));h.append(el('div','ic',b.icon||'💌'),el('h1','',b.title||'Letter Box'),el('p','',b.subtitle||''));return h}
+async function load(pin){try{const d=await api('/api/box/'+encodeURIComponent(id)+'/open',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({pin:pin||''})});if(pin)sessionStorage.setItem(KEY,pin);show(d.box)}
+ catch(e){const d=e.data||{};if(e.status===404){out.innerHTML='<div class="card">This box was not found 💔</div>';return}
+  if(e.status===423){out.innerHTML='';out.append(head({icon:'🔒',title:'Not yet…',subtitle:d.error||'This box is still locked'}));if(d.unlockAt)out.append(el('p','','Opens on '+d.unlockAt+' 🎁'));return}
+  if(d.needPin){if(pin)sessionStorage.removeItem(KEY);askPin(pin?e.message:'')}else out.innerHTML='<div class="card">Something went wrong. Please try again 💔</div>'}}
+function askPin(msg){out.innerHTML='';out.append(head({icon:'🔐',title:'Secret Box',subtitle:'Enter the PIN to open'}));
+ const w=el('div');w.innerHTML='<div class="pin"><input id="pi" type="password" inputmode="numeric" autocomplete="off" maxlength="12"><button class="btn" id="pg">Open ♥</button></div><div class="err"></div>';out.append(w);
+ w.querySelector('.err').textContent=msg||'';const go=()=>{const v=$('#pi').value.trim();if(v)load(v)};$('#pg').onclick=go;$('#pi').onkeydown=e=>{if(e.key==='Enter')go()};$('#pi').focus()}
+
+// one letter's content: photo + text + the conversation under it
+function content(l,b,cls){const c=el('div',cls||'');if(l.photo){const im=el('img','lph');im.src=l.photo;im.alt='';c.append(im)}c.append(el('div','lb',l.body||''));c.append(L.thread({scope:b.id,item:l.id,replies:l.replies,canReply:b.canReply}));return c}
+const surprise=(fn)=>{const bt=el('button','btn','🎲 Surprise me');bt.style.marginBottom='6px';bt.onclick=()=>{fn();burst(bt,6)};return bt};
+
+const LAY={
+ accordion(b,L2,root){const ds=[];root.append(surprise(()=>{const d=ds[Math.random()*ds.length|0];ds.forEach(x=>x.open=false);d.open=true;d.scrollIntoView&&d.scrollIntoView({behavior:'smooth',block:'center'})}));
+  const list=el('div');root.append(list);
+  L2.forEach(l=>{const d=el('details','lc'),s=el('summary','',(l.emoji||'💌')+' '+(l.title||'Letter'));d.append(s,content(l,b,'lb0'));if(L2.length===1)d.open=true;list.append(d);ds.push(d)})},
+ notes(b,L2,root){const w=el('div','notes');L2.forEach((l,k)=>{const n=el('div','nc');n.append(el('span','no','#'+(k+1)));if(l.title)n.append(el('h3','',(l.emoji||'')+' '+l.title));n.append(content(l,b));w.append(n)});root.append(w)},
+ envelopes(b,L2,root){const g=el('div','envg'),opened=new Set();
+  const open=(l,btn)=>{opened.add(l.id);btn.classList.add('read');const sh=el('div','sheet'),box=el('div'),x=el('button','x','✕');x.onclick=()=>sh.remove();sh.onclick=e=>{if(e.target===sh)sh.remove()};
+   box.append(x,el('h2','',(l.emoji||'💌')+' '+(l.title||'Letter')),content(l,b));sh.append(box);document.body.append(sh)};
+  const btns=L2.map(l=>{const e=el('button','env');e.append(el('i','seal',l.emoji||'💌'),el('span','t',l.title||'Letter'));e.onclick=()=>open(l,e);g.append(e);return e});
+  root.append(surprise(()=>{const i=Math.random()*L2.length|0;open(L2[i],btns[i])}),g)},
+ timeline(b,L2,root){const w=el('div','tl');L2.forEach((l,k)=>{const i=el('div','tli'),c=el('div','tc');i.append(el('span','dot',String(k+1)));
+  if(l.photo){const im=el('img','cover');im.src=l.photo;im.alt='';c.append(im)}if(l.title)c.append(el('h3','',(l.emoji||'')+' '+l.title));c.append(el('div','lb',l.body||''),L.thread({scope:b.id,item:l.id,replies:l.replies,canReply:b.canReply}));i.append(c);w.append(i)});root.append(w)},
+ slider(b,L2,root){let i=0,x0=null;const wrap=el('div','sld'),holder=el('div'),nav=el('div','slnav'),pv=el('button','btn','‹ Prev'),nx=el('button','btn','Next ›'),cnt=el('b');
+  const draw=()=>{holder.innerHTML='';const l=L2[i],c=el('div','slc');c.dataset.fr=L.frame;if(!l.photo)c.append(el('div','em',l.emoji||'💌'));c.append(el('h2','',l.title||''),content(l,b));holder.append(c);cnt.textContent=(i+1)+' / '+L2.length;window.scrollTo({top:0,behavior:'smooth'})};
+  const go=n=>{i=(n+L2.length)%L2.length;draw()};pv.onclick=()=>go(i-1);nx.onclick=()=>go(i+1);nav.append(pv,cnt,nx);if(L2.length<2)nav.style.display='none';
+  wrap.ontouchstart=e=>{x0=e.touches[0].clientX};wrap.ontouchend=e=>{if(x0===null)return;const dx=e.changedTouches[0].clientX-x0;if(Math.abs(dx)>70&&L2.length>1&&!/TEXTAREA/.test(e.target.tagName))go(i+(dx<0?1:-1));x0=null};
+  wrap.append(holder,nav);root.append(surprise(()=>go(Math.random()*L2.length|0)),wrap);draw()}
+};
+function show(b){out.innerHTML='';document.body.className='pg-'+(b.theme||'rose');L.setDecor(b.decor||'hearts');document.title=(b.icon||'💌')+' '+(b.title||'Letter Box');
+ out.append(head(b));const L2=b.letters||[];if(!L2.length){out.insertAdjacentHTML('beforeend','<div class="card">No letters here yet 💌</div>');return}
+ (LAY[b.layout]||LAY.accordion)(b,L2,out)}
+load(sessionStorage.getItem(KEY)||'');
+</script></body></html>

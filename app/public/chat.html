@@ -1,0 +1,14 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><script src="/guard.js"></script><link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,600;1,700&family=Quicksand:wght@400;600;700&family=Hind+Siliguri:wght@400;500;600&display=swap" rel="stylesheet"><link rel="stylesheet" href="/site.css"><title>Messages 💬</title></head><body>
+<div class="wrap"><a class="back" id="bk" href="/">← Back</a><h1>Talk to me 💬</h1><p class="sub">Write anything — I’ll reply here 💖</p><div class="chat" id="ch"></div></div>
+<div class="chatf"><div><textarea id="t" rows="1" placeholder="Write a message…"></textarea><button class="btn" id="s">Send ♥</button></div></div>
+<script src="/site.js"></script><script>
+const {$,api}=L;let n=-1;$('#bk').onclick=e=>{e.preventDefault();L.back('/')};
+const fmt=t=>{try{return new Date(t).toLocaleString([],{dateStyle:'medium',timeStyle:'short'})}catch{return ''}};
+async function load(scroll){try{const d=await api('/api/chat'),m=d.messages;if(m.length===n)return;n=m.length;const box=$('#ch');box.innerHTML='';
+ if(!m.length)box.innerHTML='<div class="card">No messages yet. Say hi 👋</div>';
+ m.forEach(r=>{const b=document.createElement('div');b.className='bub '+(r.from==='admin'?'me':'you');const t=document.createElement('div');t.className='bt';t.textContent=r.body;const s=document.createElement('small');s.textContent=(r.from==='admin'?'💌 ':'')+fmt(r.at);b.append(t,s);box.append(b)});
+ if(scroll)window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'})}catch{}}
+$('#s').onclick=async()=>{const v=$('#t').value.trim();if(!v)return $('#t').focus();$('#s').disabled=true;
+ try{await api('/api/messages',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({content:v})});$('#t').value='';n=-1;await load(true);L.burst($('#s'),5)}catch(e){alert(e.message)}$('#s').disabled=false};
+load(true);setInterval(()=>load(false),15000);
+</script></body></html>

@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Admin · Love Universe</title><link rel="stylesheet" href="/admin.css"></head>
+<body>
+<div id="login" hidden><div class="lbox"><div class="logo">💌</div><h1>Love Universe</h1><p>Admin panel</p>
+<input class="in" type="password" id="pw" placeholder="Admin password" autocomplete="current-password"><button class="btn primary block" id="go">Login</button><div class="lerr" id="lerr"></div></div></div>
+<div id="app" hidden>
+  <aside id="sb"><div class="brand"><span>💌</span> Love Universe</div><nav id="nav"></nav>
+    <div class="sbf"><a href="/" target="_blank" rel="noopener">🌐 View site ↗</a><button id="logout">Logout</button></div></aside>
+  <div class="main"><header class="top"><button class="burger" id="burger" aria-label="Menu">☰</button><h2 id="ptitle"></h2><span id="state"></span>
+    <button class="btn ghost sm" id="discard" hidden>Discard</button><button class="btn primary" id="save" disabled>Save &amp; go live</button></header>
+    <main id="view"></main></div>
+</div>
+<div id="toasts"></div><div id="modal-root"></div>
+<script src="/admin.js"></script>
+</body></html>
